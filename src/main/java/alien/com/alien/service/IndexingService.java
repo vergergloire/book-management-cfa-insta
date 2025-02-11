@@ -46,6 +46,6 @@ public class IndexingService {
         invertedIndex.setWords(new ArrayList<>(wordCounts.keySet()));
         invertedIndexRepository.save(invertedIndex);
 
-        System.out.println("📌 Indexation terminée pour : " + book.getTitle());
+        System.out.println("Indexation terminée pour : " + book.getTitle());
     }
 }

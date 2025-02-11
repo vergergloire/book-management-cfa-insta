@@ -1,140 +1,86 @@
 package alien.com.alien.service;
 
+import alien.com.alien.domain.entity.Book;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class BookDownloaderService {
-
-    private static final String GUTENBERG_TOP_URL = "https://www.gutenberg.org/browse/scores/top";
-
+    private static final String GUTENDEX_API_URL = "https://gutendex.com/books";
 
     /**
-     * Récupère une liste d'URLs de livres à partir du site Project Gutenberg.
+     * Récupère une liste de livres depuis l'API Gutendex.
      */
-    public List<String> getBookUrls() throws IOException {
-        List<String> bookUrls = new ArrayList<>();
-        var doc = Jsoup.connect(GUTENBERG_TOP_URL)
-                .header("Accept-Encoding", "identity")
-                .get();
+    public List<Book> fetchBooks(int limit) throws IOException {
+        List<Book> books = new ArrayList<>();
+        String nextPage = GUTENDEX_API_URL;
 
-        doc.select("a[href]").forEach(element -> {
-            String href = element.attr("href");
-            if (href.startsWith("/ebooks/")) {
-                String bookId = href.replace("/ebooks/", "").trim();
-                bookUrls.add("https://www.gutenberg.org/files/" + bookId + "/" + bookId + "-0.txt");
+        while (nextPage != null && books.size() < limit) {
+            Document doc = Jsoup.connect(nextPage).ignoreContentType(true).get();
+            String json = doc.body().text();
+            JSONObject jsonObject = new JSONObject(json);
+
+            nextPage = jsonObject.optString("next", null);
+            JSONArray results = jsonObject.getJSONArray("results");
+
+            for (int i = 0; i < results.length(); i++) {
+                if (books.size() >= limit) break;
+
+                JSONObject bookJson = results.getJSONObject(i);
+                String title = bookJson.getString("title");
+                String author = bookJson.getJSONArray("authors").length() > 0 ?
+                        bookJson.getJSONArray("authors").getJSONObject(0).getString("name") : "Auteur inconnu";
+                String coverImage = bookJson.getJSONObject("formats").optString("image/jpeg", "");
+                String htmlUrl = bookJson.getJSONObject("formats").optString("text/html", "");
+
+                if (!htmlUrl.isEmpty()) {
+                    String content = fetchBookContent(htmlUrl);
+                    int wordCount = countWords(content);
+
+                    if (!content.isEmpty() && wordCount >= 10000) { // Filtre des livres trop courts
+                        books.add(new Book(title, author, content, wordCount, coverImage));
+                        System.out.println(" Livre téléchargé : " + title + " | Mots : " + wordCount);
+                    }
+                }
             }
-        });
-
-        return bookUrls.stream().distinct().limit(3000).toList();
+        }
+        return books;
     }
 
     /**
-     * Télécharge un livre et extrait uniquement le texte entre les marqueurs Gutenberg.
+     * Télécharge le contenu HTML du livre et extrait le texte entre <h>Contents</h> et <div id="pg-end-separator">
      */
-    public String downloadAndExtractBook(String url) throws IOException {
-        String content = new String(new URL(url).openStream().readAllBytes(), StandardCharsets.UTF_8);
-
-        // Extraire uniquement le contenu utile
-        return extractGutenbergContent(content);
-    }
-
-    /**
-     * Extrait uniquement le texte entre les marqueurs de début et de fin de Gutenberg.
-     */
-    private String extractGutenbergContent(String content) {
-        String[] lines = content.split("\n");
+    public String fetchBookContent(String htmlUrl) throws IOException {
+        Document doc = Jsoup.connect(htmlUrl).get();
         StringBuilder extractedContent = new StringBuilder();
         boolean isInsideBook = false;
 
-        for (String line : lines) {
-            if (line.startsWith("*** START OF THIS PROJECT GUTENBERG EBOOK")) {
+        for (var element : doc.body().children()) {
+            String text = element.text().trim();
+
+            if (text.startsWith("Contents")) {
                 isInsideBook = true;
-                continue; // On ignore cette ligne
+                continue;
             }
-            if (line.startsWith("*** END OF THIS PROJECT GUTENBERG EBOOK")) {
-                break; // Fin du livre
+            if (text.contains("*** END OF THE PROJECT GUTENBERG EBOOK")) {
+                break;
             }
             if (isInsideBook) {
-                extractedContent.append(line).append("\n");
+                extractedContent.append(text).append("\n");
             }
         }
-
         return extractedContent.toString().trim();
     }
 
     /**
-     * Extrait le titre du livre.
-     */
-    public String extractTitle(String content) {
-        if (content == null || content.isEmpty()) return "Titre inconnu";
-
-        String[] lines = content.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i].trim();
-
-            // On suppose que le titre est la première ligne pertinente
-            if (!line.isEmpty() && !line.toLowerCase().contains("gutenberg") && !line.toLowerCase().contains("ebook")) {
-                return line;
-            }
-        }
-        return "Titre inconnu";
-    }
-
-    /**
-     * Extrait l'auteur du livre.
-     */
-    public String extractAuthor(String content) {
-        if (content == null || content.isEmpty()) return "Auteur inconnu";
-
-        String[] lines = content.split("\n");
-        for (String line : lines) {
-            line = line.trim();
-            if (line.toLowerCase().startsWith("by ") || line.toLowerCase().startsWith("par ")) {
-                return line.replace("by", "").replace("par", "").trim();
-            }
-        }
-        return "Auteur inconnu";
-    }
-
-    /**
-     * Extrait la date de publication si disponible.
-     */
-    public String extractPublicationDate(String content) {
-        if (content == null || content.isEmpty()) return "Date inconnue";
-
-        String[] lines = content.split("\n");
-        for (String line : lines) {
-            if (line.toLowerCase().contains("release date") || line.toLowerCase().contains("publication date")) {
-                return line.replace("Release Date:", "").replace("Publication Date:", "").trim();
-            }
-        }
-        return "Date inconnue";
-    }
-
-    /**
-     * Extrait le type de l'œuvre (roman, essai, poésie...).
-     */
-    public String extractBookType(String content) {
-        if (content.toLowerCase().contains("novel") || content.toLowerCase().contains("roman")) {
-            return "Roman";
-        }
-        if (content.toLowerCase().contains("poem") || content.toLowerCase().contains("poetry")) {
-            return "Poésie";
-        }
-        if (content.toLowerCase().contains("essay")) {
-            return "Essai";
-        }
-        return "Type inconnu";
-    }
-
-    /**
-     * Compte les mots d'un texte.
+     * Compte les mots dans un texte.
      */
     public int countWords(String text) {
         return text == null ? 0 : text.split("\\s+").length;
