@@ -1,4 +1,4 @@
-package alien.com.alien.domain.entity;
+package alien.com.alien.entity;
 
 import jakarta.persistence.*;
 
@@ -10,7 +10,10 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String author;
 
     @Column(columnDefinition = "TEXT")
@@ -18,6 +21,7 @@ public class Book {
 
     private int wordCount;
 
+    @Column(columnDefinition = "TEXT")
     private String coverImageUrl;
 
 

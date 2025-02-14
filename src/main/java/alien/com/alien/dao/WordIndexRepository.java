@@ -1,6 +1,6 @@
 package alien.com.alien.dao;
 
-import alien.com.alien.domain.entity.WordIndex;
+import alien.com.alien.entity.WordIndex;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package alien.com.alien.api;
 
-import alien.com.alien.domain.entity.Book;
+import alien.com.alien.entity.Book;
 import alien.com.alien.service.SearchService;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +34,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 3️⃣ Recherche par phrase exacte
+     * Recherche par phrase exacte
      */
     @GetMapping("/search/phrase")
     public List<Book> searchByPhrase(@RequestParam String phrase) {
@@ -42,7 +42,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 4️⃣ Recherche "ET" / "OU"
+     * Recherche "ET" / "OU"
      */
     @GetMapping("/search/boolean")
     public List<Book> searchWithBooleanQuery(
@@ -53,7 +53,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 5️⃣ Recherche par similarité (fuzzy search)
+     * Recherche par similarité (fuzzy search)
      */
     @GetMapping("/search/fuzzy")
     public List<Book> searchByFuzzyMatch(@RequestParam String keyword) {
@@ -61,7 +61,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 6️⃣ Recherche pondérée (TF-IDF)
+     * Recherche pondérée (TF-IDF)
      */
     @GetMapping("/search/tfidf")
     public List<Book> searchByTFIDF(@RequestParam String keyword) {
@@ -69,7 +69,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 7️⃣ Recherche contextuelle (NLP)
+     * Recherche contextuelle (NLP)
      */
     @GetMapping("/search/nlp")
     public List<Book> searchByNLP(@RequestParam String query) {
@@ -77,7 +77,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 8️⃣ Recherche par métadonnées
+     * Recherche par métadonnées
      */
     @GetMapping("/search/metadata")
     public List<Book> searchByMetadata(
@@ -89,7 +89,7 @@ public class BookSearchController {
     }
 
     /**
-     * 🔍 9️⃣ Recherche hybride (mixte)
+     * Recherche hybride (mixte)
      */
     @GetMapping("/search/hybrid")
     public List<Book> searchByHybrid(

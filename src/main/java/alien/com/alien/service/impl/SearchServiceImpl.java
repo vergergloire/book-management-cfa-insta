@@ -1,9 +1,10 @@
-package alien.com.alien.service;
+package alien.com.alien.service.impl;
 
 import alien.com.alien.dao.BookRepository;
 import alien.com.alien.dao.WordIndexRepository;
-import alien.com.alien.domain.entity.Book;
-import alien.com.alien.domain.entity.WordIndex;
+import alien.com.alien.entity.Book;
+import alien.com.alien.entity.WordIndex;
+import alien.com.alien.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

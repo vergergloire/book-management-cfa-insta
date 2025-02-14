@@ -1,6 +1,6 @@
 package alien.com.alien.service;
 
-import alien.com.alien.domain.entity.Book;
+import alien.com.alien.entity.Book;
 
 import java.util.List;
 
