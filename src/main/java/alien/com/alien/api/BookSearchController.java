@@ -19,6 +19,14 @@ public class BookSearchController {
     /**
      * Recherche par mot-clé exact
      */
+    @GetMapping
+    public List<Book> getBooks() {
+        return searchService.findaAll();
+    }
+
+    /**
+     * Recherche par mot-clé exact
+     */
     @GetMapping("/search")
     public List<Book> searchByKeyword(@RequestParam String keyword) {
         return searchService.searchByKeyword(keyword);

@@ -27,6 +27,11 @@ public class SearchServiceImpl implements SearchService {
         this.bookRepository = bookRepository;
     }
 
+    @Override
+    public List<Book> findaAll() {
+        return bookRepository.findAll();
+    }
+
     /**
      * Recherche par mot-clé exact
      */

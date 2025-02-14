@@ -5,6 +5,7 @@ import alien.com.alien.entity.Book;
 import java.util.List;
 
 public interface SearchService {
+    List<Book> findaAll();
     List<Book> searchByKeyword(String keyword);
     List<Book> searchByRegex(String regex);
     List<Book> searchByPhrase(String phrase);
