@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+
+  # Backend Spring Boot (alien-api)
+  alien-api:
+    image: alien-api
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://alien-db:5432/alien_db
+      - SPRING_DATASOURCE_USERNAME=alien
+      - SPRING_DATASOURCE_PASSWORD=alien
+    ports:
+      - "8080:8080"
+    depends_on:
+      - alien-db
+    networks:
+      - app_network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  # Base de données PostgreSQL (alien-db)
+  alien-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: alien_db
+      POSTGRES_USER: alien
+      POSTGRES_PASSWORD: alien
+      POSTGRES_MAX_CONNECTIONS: 1000000
+
+    ports:
+      - "5433:5432"
+    networks:
+      - app_network
+    volumes:
+      - alien_db_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+
+
+volumes:
+  alien_db_data:
