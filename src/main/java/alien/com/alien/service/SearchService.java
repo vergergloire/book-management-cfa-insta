@@ -14,4 +14,5 @@ public interface SearchService {
     List<Book> searchByNLP(String query);
     List<Book> searchByMetadata(String author, String year, String genre);
     List<Book> searchByHybrid(String query, String metadata);
+    List<Book> suggestSimilarBooks(String query);
 }

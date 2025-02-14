@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -155,4 +157,38 @@ public class SearchServiceImpl implements SearchService {
         List<Book> metadataResults = searchByMetadata(metadata, null, null);
         return keywordResults.stream().filter(metadataResults::contains).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Book> suggestSimilarBooks(String query) {
+        // 1Récupérer les livres qui correspondent à la recherche
+        List<Book> foundBooks = searchByKeyword(query);
+
+        // Si aucun livre trouvé, essayer avec une recherche floue
+        if (foundBooks.isEmpty()) {
+            foundBooks = searchByFuzzyMatch(query);
+        }
+
+        // Récupérer les livres similaires (basés sur mots-clés et contenu)
+        Set<Book> recommendations = new HashSet<>();
+
+        for (Book book : foundBooks) {
+            // Ajouter des livres ayant des mots-clés similaires
+            List<WordIndex> relatedWords = wordIndexRepository.findByBook(book);
+            for (WordIndex word : relatedWords) {
+                recommendations.addAll(searchByKeyword(word.getWord())); // Recherche des livres contenant ces mots
+            }
+
+            // Ajouter les livres avec une similarité de titre (Fuzzy Search)
+            recommendations.addAll(searchByFuzzyMatch(book.getTitle()));
+
+            // Ajouter les livres avec une similarité de contenu (TF-IDF)
+            recommendations.addAll(searchByTFIDF(book.getTitle()));
+
+            // Ajouter les livres du même genre (si une catégorie est disponible)
+        }
+
+        // Retourner une liste sans doublons et limitée à 10 suggestions
+        return recommendations.stream().distinct().limit(10).collect(Collectors.toList());
+    }
+
 }

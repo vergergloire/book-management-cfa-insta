@@ -98,4 +98,9 @@ public class BookSearchController {
     ) {
         return searchService.searchByHybrid(query, metadata);
     }
+
+    @GetMapping("/search/suggestions")
+    public List<Book> getSuggestions(@RequestParam String query) {
+        return searchService.suggestSimilarBooks(query);
+    }
 }

@@ -27,11 +27,11 @@ public class BookServiceImpl implements BookService {
     @PostConstruct
     public void loadBooks() {
         try {
-            List<Book> bookList = downloaderService.fetchBooks((1700));
+            List<Book> bookList = downloaderService.fetchBooks((1664));
             int booksAdded = 0;
 
             for (Book book : bookList) {
-                if (booksAdded >= 1700) break;
+                if (booksAdded >= 1664) break;
 
                 if (bookRepository.existsByTitleAndAuthor(book.getTitle(), book.getAuthor())) {
                     System.out.println("Livre déjà en base (double vérification) : " + book.getTitle());

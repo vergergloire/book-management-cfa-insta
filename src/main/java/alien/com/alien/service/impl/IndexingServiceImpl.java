@@ -16,11 +16,11 @@ import java.util.Map;
 
 @Service
 public class IndexingServiceImpl implements IndexingService {
-
     private final WordIndexRepository wordIndexRepository;
     private final InvertedIndexRepository invertedIndexRepository;
 
-    public IndexingServiceImpl(WordIndexRepository wordIndexRepository, InvertedIndexRepository invertedIndexRepository, BookRepository bookRepository) {
+    public IndexingServiceImpl(WordIndexRepository wordIndexRepository,
+                               InvertedIndexRepository invertedIndexRepository, BookRepository bookRepository) {
         this.wordIndexRepository = wordIndexRepository;
         this.invertedIndexRepository = invertedIndexRepository;
     }
@@ -37,7 +37,7 @@ public class IndexingServiceImpl implements IndexingService {
             }
         }
 
-        // Stocker dans `word_index`
+        // Stocker dans word_index
         for (Map.Entry<String, Integer> entry : wordCounts.entrySet()) {
             wordIndexRepository.save(new WordIndex(null, entry.getKey(), book, entry.getValue()));
         }
