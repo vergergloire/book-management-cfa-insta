@@ -17,7 +17,7 @@ public class BookSearchController {
     }
 
     /**
-     * Recherche par mot-clé exact
+     * RRécupère tous les livres
      */
     @GetMapping
     public List<Book> getBooks() {
